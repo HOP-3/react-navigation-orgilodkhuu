@@ -18,7 +18,6 @@ import HomeScreen from './src/screens/Home';
 import AboutScreen from './src/screens/About';
 import Chat from './src/screens/Chat';
 import { RootStackParamList } from './src/screens/types';
-import firebase from '@react-native-firebase/app';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();

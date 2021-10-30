@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TextInput, Pressable, FlatList } from 'react-native';
 
 type message = string;
-type messages = string[];
+type messages = {
+    message: string,
+    sentAt: string,
+};
 
 import firestore, { firebase } from '@react-native-firebase/firestore';
 
@@ -10,10 +13,10 @@ const path = firestore().collection('messages');
 
 const Chat = () => {
     const [input, setInput] = useState<message>("");
-    const [messages, setMessages] = useState<messages>([]);
+    const [messages, setMessages] = useState<messages[]>();
+    const flatListRef = useRef<any>(null);
 
     const add = () => {
-        console.log(input);
         path.add({
             message: input,
             sentAt: firestore.FieldValue.serverTimestamp(),
@@ -21,12 +24,25 @@ const Chat = () => {
         setInput("");
     };
 
-    // useEffect(() => {
-    //     const sub = path.onSnapshot((snap) => {
-    //         console.log(snap);
-    //     });
-    //     return () => sub();
-    // },[])
+    useEffect(() => {
+        let tmp: messages[] = [];
+        const sub = path.orderBy('sentAt').onSnapshot(snap => {
+            tmp=[];
+            snap.forEach(item => {
+                tmp.push({message: item.data().message, sentAt: item.data().sentAt});
+            });
+            setMessages(tmp);
+        });
+        return () => sub();
+    },[])
+
+    const render = ({item}) => {
+        return(
+            <View style={styles.msgs}>
+                <Text style={{color: "white"}}>{item.message}</Text>
+            </View>
+        )
+    }
 
     return (
         <View style={styles.container}>
@@ -34,6 +50,7 @@ const Chat = () => {
                 <TextInput autoCapitalize={"none"} autoCompleteType={"off"} autoCorrect={false} style={styles.input} value={input} onChangeText={text => setInput(text)} />
                 <Pressable onPress={add} style={styles.btn}><Text style={{ color: "white" }}>Send</Text></Pressable>
             </View>
+            <FlatList ref={flatListRef} data={messages} renderItem={render} onContentSizeChange={() => flatListRef.current.scrollToEnd()}/>
         </View>
     )
 }
@@ -67,5 +84,14 @@ const styles = StyleSheet.create({
         alignItems: "center",
         backgroundColor: "aqua",
     },
+    msgs:{
+        height: 30,
+        width: 300,
+        backgroundColor: "aqua",
+        padding: 5,
+        marginBottom: 10,
+        marginLeft: 20,
+        borderRadius: 10,
+    }
 })
 export default Chat;
