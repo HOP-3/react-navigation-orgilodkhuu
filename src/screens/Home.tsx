@@ -10,7 +10,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 const Home = ({navigation}: Props) => {
   return (
     <View>
-      <Link onPress={() => navigation.navigate('About')} text="Go to About" />
+      <Link onPress={() => navigation.navigate('About')} text="Go to About page orgil" />
     </View>
   );
 };
